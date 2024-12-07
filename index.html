@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人员信息查询系统</title>
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css">
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👥</text></svg>">
+</head>
+<body>
+    <div id="app">
+        <!-- 主题切换按钮 -->
+        <div class="theme-switch">
+            <el-button @click="toggleTheme" :title="isDark ? '切换到亮色模式' : '切换到深色模式'">
+                <template v-if="isDark">🌞</template>
+                <template v-else>🌙</template>
+            </el-button>
+        </div>
+
+        <div class="container">
+            <h1>人员信息查询系统</h1>
+            
+            <!-- 搜索筛选区域 -->
+            <div class="search-area">
+                <el-form :inline="true" class="filter-form">
+                    <el-form-item label="姓名搜索">
+                        <el-input v-model="searchName" placeholder="请输入姓名" clearable>
+                            <template #prefix>
+                                <el-icon><search /></el-icon>
+                            </template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="性别">
+                        <el-select v-model="selectedGender" placeholder="请选择性别" clearable>
+                            <el-option label="男" value="男"></el-option>
+                            <el-option label="女" value="女"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="年龄">
+                        <el-select v-model="selectedYear" placeholder="请选择年龄" clearable>
+                            <el-option v-for="age in birthYears" 
+                                     :key="age" 
+                                     :label="age" 
+                                     :value="age">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="省份">
+                        <el-select v-model="selectedProvince" placeholder="请选择省份" clearable>
+                            <el-option v-for="province in provinces" 
+                                     :key="province" 
+                                     :label="province" 
+                                     :value="province">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="resetFilters">
+                            重置筛选
+                        </el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+
+            <!-- 数据展示区域 -->
+            <div class="data-area">
+                <el-table 
+                    :data="filteredPeople" 
+                    style="width: 100%" 
+                    height="600" 
+                    stripe
+                    v-loading="loading"
+                    element-loading-text="加载中..."
+                    element-loading-background="rgba(255, 255, 255, 0.8)">
+                    <el-table-column prop="name" label="姓名" width="120">
+                        <template #default="scope">
+                            <el-button 
+                                link 
+                                type="primary" 
+                                @click="showDetailDialog(scope.row)"
+                                class="name-link">
+                                {{ scope.row.name }}
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="gender" label="性别" width="80">
+                        <template #default="scope">
+                            <span :class="['status-tag', scope.row.gender === '未知' ? 'status-unknown' : 'status-mainland']">
+                                {{ scope.row.gender }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="age" label="年龄" width="100">
+                        <template #default="scope">
+                            <span :class="['status-tag', scope.row.age === '未知' ? 'status-unknown' : 'status-mainland']">
+                                {{ scope.row.age }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="province" label="省份" width="120">
+                        <template #default="scope">
+                            <span :class="['status-tag', 
+                                scope.row.province === '未知' ? 'status-unknown' : 
+                                scope.row.province === '非大陆地区' ? 'status-foreign' : 'status-mainland']">
+                                {{ scope.row.province }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="idCardDisplay" label="身份证号码">
+                        <template #default="scope">
+                            <el-tooltip :content="scope.row.idCardDisplay" placement="top" :show-after="1000">
+                                <span>{{ scope.row.idCardDisplay }}</span>
+                            </el-tooltip>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+
+            <!-- 分页区域 -->
+            <div class="pagination-area">
+                <el-pagination
+                    v-model:current-page="currentPage"
+                    v-model:page-size="pageSize"
+                    :page-sizes="[20, 50, 100, 200]"
+                    layout="total, sizes, prev, pager, next"
+                    :total="totalCount"
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange">
+                </el-pagination>
+            </div>
+        </div>
+    </div>
+
+    <script src="//unpkg.com/vue@3"></script>
+    <script src="//unpkg.com/element-plus"></script>
+    <script src="src/js/app.js"></script>
+</body>
+</html> 
